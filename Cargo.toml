@@ -1,0 +1,16 @@
+[package]
+name = "golibafl"
+version = "0.1.0"
+edition = "2021"
+
+[profile.release]
+opt-level = 3
+codegen-units = 1
+lto = "fat"
+
+[dependencies]
+libafl = { version = "0.15.1", features = ["prelude",  "std", "derive"]}
+libafl_bolts = { version = "0.15.1" } 
+libafl_targets = { version = "0.15.1", features = ["sancov_8bit", "observers", "libfuzzer", "sancov_cmplog", "sancov_pcguard_hitcounts"] }
+clap = {version = "4.5.23", features = ["derive"]}
+mimalloc = "0.1.43"
