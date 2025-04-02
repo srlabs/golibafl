@@ -7,7 +7,7 @@ go install github.com/dvyukov/go-fuzz/go-fuzz@latest github.com/dvyukov/go-fuzz/
 ```
 
 ## Fuzzing
-To fuzz a target, navigate to its directory (e.g., `cd trivial`) and run the following commands:
+To fuzz a target, navigate to its directory (e.g., `cd path_constraint`) and run the following commands:
 
 **Build the fuzzer**
 
@@ -31,4 +31,4 @@ The script produces a `cover.html` file in the target directory.
 
 
 ## Note
-Since `go-fuzz` is deprecated and lacks support for Go 1.18+ features, only the trivial target is included in this directory. All other targets that we used for testing didn't compile.
+Since `go-fuzz` is deprecated and lacks support for Go 1.18+ features, only the path_constraint target is included in this directory. All other targets that we used for testing didn't compile.
