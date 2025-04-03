@@ -32,8 +32,8 @@ By leveraging Go’s native libFuzzer-compatible instrumentation (`sancov_8bit`)
    ```
 
 ## Usage
-### Defining a Harness in Go
-Implement your harness in the "LLVMFuzzerTestOneInput" function, which will be used by libAFL:
+### Defining a harness in Go
+Implement your harness in the `LLVMFuzzerTestOneInput` function, which will be used by LibAFL:
 ```go
     func LLVMFuzzerTestOneInput(data *C.char, size C.size_t) C.int {
         // "data" should be converted to the type you need and passed as input
@@ -60,13 +60,9 @@ cargo run -- fuzz --help
 cargo run -- run --help
 ```
 
-### Performance Optimization
+### Performance optimization
 - **Use Rust nightly toolchain** for optimized memory mapping.
 - **Upgrade Go to at least version 1.23** to avoid `cgo` stack bound performance issues.
 
-## Contributing
-Contributions are welcome! Please submit issues or pull requests to improve this project.
-
 ## License
 This project is licensed under the Apache 2.0 License.
-
