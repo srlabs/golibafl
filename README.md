@@ -4,13 +4,12 @@
 This project provides a setup for fuzzing golang binaries using [LibAFL](https://github.com/AFLplusplus/LibAFL). 
 By leveraging Go’s native libFuzzer-compatible instrumentation (`sancov_8bit`), we enable advanced fuzzing capabilities beyond Go’s built-in fuzzing support.
 
-## Features
 - **In-process fuzzing** for maximum performance.
 - **Coverage-guided fuzzing with comparison tracing support** for guided mutation.
 - **Interoperability with Go** via Foreign Function Interface (FFI).
 
 ## Installation
-### Prerequisites
+### Requirements
 - Go 1.18 or later (recommended: latest version)
 - Rust (nightly toolchain recommended for optimizations)
 - Cargo and Rust toolchain installed
@@ -35,13 +34,13 @@ By leveraging Go’s native libFuzzer-compatible instrumentation (`sancov_8bit`)
 ### Defining a harness in Go
 Implement your harness in the `LLVMFuzzerTestOneInput` function, which will be used by LibAFL:
 ```go
-    func LLVMFuzzerTestOneInput(data *C.char, size C.size_t) C.int {
-        // "data" should be converted to the type you need and passed as input
-        input := C.GoBytes(unsafe.Pointer(data), C.int(size))
+func LLVMFuzzerTestOneInput(data *C.char, size C.size_t) C.int {
+   // `data` should be converted to the type you need and passed as input
+   input := C.GoBytes(unsafe.Pointer(data), C.int(size))
 
-        // call a function from your library here
-        mylib.parse(input)
-    }
+   // function to be fuzzed, i.e `parse`
+   mylib.parse(input)
+}
 ```
 
 For an example setup, refer to our [harness template](./harness_template/).
