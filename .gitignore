@@ -19,3 +19,4 @@
 **/coverprofile
 **/corpus*
 **/crashes*
+**/fuzz_campaign.sh
