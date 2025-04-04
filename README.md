@@ -21,7 +21,7 @@ By leveraging Go’s native libFuzzer-compatible instrumentation (`sancov_8bit`)
    cd <repo-name>
    ```
 2. Define your golang harness (see below)
-3. Define the Harness location with the environement variable `HARNESS`:
+3. Define the harness location with the environement variable `HARNESS`:
     ```sh
     export "HARNESS=examples/promql"
     ```
