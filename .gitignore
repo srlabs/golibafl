@@ -17,3 +17,5 @@
 **/*.out
 **/coverage
 **/coverprofile
+**/corpus*
+**/crashes*
