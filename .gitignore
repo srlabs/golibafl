@@ -3,6 +3,7 @@
 /harness/harness.h
 /crashes
 /corpus
+.direnv
 **/output
 **/*output*
 /input
