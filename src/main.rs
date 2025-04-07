@@ -29,7 +29,12 @@ use libafl_targets::{
     CmpLogObserver, COUNTERS_MAPS,
 };
 use mimalloc::MiMalloc;
-use std::{env, fs::read_dir, path::PathBuf, time::Duration};
+use std::{
+    env,
+    fs::read_dir,
+    path::{Path, PathBuf},
+    time::Duration,
+};
 
 #[global_allocator]
 static GLOBAL: MiMalloc = MiMalloc;
@@ -123,7 +128,7 @@ fn run(input: PathBuf) {
 // Fuzzing function, wrapping the exported libfuzzer functions from golang
 #[allow(clippy::too_many_lines)]
 #[allow(static_mut_refs)]
-fn fuzz(cores: &Cores, broker_port: u16, input: &PathBuf, output: &PathBuf) {
+fn fuzz(cores: &Cores, broker_port: u16, input: &PathBuf, output: &Path) {
     let args: Vec<String> = env::args().collect();
     if unsafe { libfuzzer_initialize(&args) } == -1 {
         println!("Warning: LLVMFuzzerInitialize failed with -1");
