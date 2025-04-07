@@ -7,7 +7,10 @@ By leveraging Go’s native libFuzzer-compatible instrumentation (`sancov_8bit`)
 - **In-process fuzzing** for maximum performance.
 - **Coverage-guided fuzzing with comparison tracing support** for guided mutation.
 - **Interoperability with Go** via Foreign Function Interface (FFI).
-- **Great performance**
+
+## Performance
+Comparing GoLibAFL with the native libfuzzer shows great performance. Running 24h on the prometheus example:
+
 <img src="images/performance.png" width="800">
 
 ## Installation
