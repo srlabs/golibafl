@@ -1,12 +1,14 @@
 # GoLibAFL
 
 ## Introduction
-This project provides a setup for fuzzing golang binaries using [LibAFL](https://github.com/AFLplusplus/LibAFL). 
+This project provides a setup for fuzzing golang binaries using [LibAFL](https://github.com/AFLplusplus/LibAFL).
 By leveraging Go’s native libFuzzer-compatible instrumentation (`sancov_8bit`), we enable advanced fuzzing capabilities beyond Go’s built-in fuzzing support.
 
 - **In-process fuzzing** for maximum performance.
 - **Coverage-guided fuzzing with comparison tracing support** for guided mutation.
 - **Interoperability with Go** via Foreign Function Interface (FFI).
+- **Great performance**
+![../images/performance.png](Code coverage after 24h compared to libfuzzer)
 
 ## Installation
 ### Requirements
@@ -47,7 +49,7 @@ For an example setup, refer to our [harness template](./harness_template/).
 
 ### Running a specific input
 To execute the harness with a specific input, run:
-```sh 
+```sh
 cargo run -- run -i <path_to_input>
 ```
 If no input path is provided, the default input directory is `./input`.
