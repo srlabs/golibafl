@@ -11,7 +11,7 @@ By leveraging Go’s native libFuzzer-compatible instrumentation (`sancov_8bit`)
 ## Performance
 Comparing GoLibAFL with the native libfuzzer shows great performance. Running 24h on the prometheus example:
 
-<img src="images/performance.png" width="800">
+<img src="images/performance.png" width="600">
 
 ## Installation
 ### Requirements
@@ -35,6 +35,12 @@ Comparing GoLibAFL with the native libfuzzer shows great performance. Running 24
    cargo run --release -- fuzz
    ```
 
+   or
+
+   ```sh
+   docker build -t golibafl .
+   docker run golibafl
+   ```
 ## Usage
 ### Defining a harness in Go
 Implement your harness in the `LLVMFuzzerTestOneInput` function, which will be used by LibAFL:
