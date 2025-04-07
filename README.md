@@ -8,7 +8,7 @@ By leveraging Go’s native libFuzzer-compatible instrumentation (`sancov_8bit`)
 - **Coverage-guided fuzzing with comparison tracing support** for guided mutation.
 - **Interoperability with Go** via Foreign Function Interface (FFI).
 - **Great performance**
-![../images/performance.png](Code coverage after 24h compared to libfuzzer)
+<img src="images/performance.png" width="800">
 
 ## Installation
 ### Requirements
