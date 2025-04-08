@@ -28,7 +28,7 @@ Comparing GoLibAFL with the native libfuzzer shows great performance. Running 24
 2. Define your golang harness (see below)
 3. Define the harness location with the environement variable `HARNESS`:
     ```sh
-    export "HARNESS=examples/promql"
+    export "HARNESS=harnesses/promql"
     ```
 4. Build and run the Rust-based LibAFL fuzzer:
    ```sh
@@ -38,8 +38,8 @@ Comparing GoLibAFL with the native libfuzzer shows great performance. Running 24
    or
 
    ```sh
-   docker build -t golibafl .
-   docker run golibafl
+   docker build --build-arg HARNESS="harnesses/promql" -t golibafl .
+   docker run -v ./output:/golibafl/output golibafl
    ```
 ## Usage
 ### Defining a harness in Go
