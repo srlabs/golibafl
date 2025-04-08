@@ -4,6 +4,7 @@
 /crashes
 /corpus
 .direnv
+.envrc
 **/output
 **/*output*
 /input
