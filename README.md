@@ -9,7 +9,7 @@ By leveraging Go’s native libFuzzer-compatible instrumentation (`sancov_8bit`)
 - **Interoperability with Go** via Foreign Function Interface (FFI).
 
 ## Performance
-Comparing GoLibAFL with the native libfuzzer shows great performance. Running 24h on the prometheus example:
+Across all our 24-hour benchmarks, GoLibAFL consistently achieved higher code coverage than existing Go fuzzing solutions. Below is the result for the [prometheus](./harnesses/promql/) target.
 
 <img src="images/performance.png" width="600">
 
