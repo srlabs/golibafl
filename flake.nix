@@ -1,27 +1,33 @@
 {
-  description = "Development shell with Python, Go, and Protobuf tools";
+  description = "Development shell with Rust and Go";
 
-  inputs.nixpkgs.url = "github:NixOS/nixpkgs";
+  inputs = {
+    nixpkgs.url = "github:NixOS/nixpkgs";
+    flake-utils.url = "github:numtide/flake-utils";
+  };
 
   outputs = {
     self,
     nixpkgs,
-  }: {
-    devShells.x86_64-linux.default = let
-      pkgs = import nixpkgs {system = "x86_64-linux";};
-      deps = with pkgs; [
-        (python3.withPackages (python-pkgs: [python-pkgs.requests]))
-        go
-        rustup
-        cargo
-        rustc
-      ];
-    in
-      pkgs.mkShell {
-        buildInputs = deps;
-        shellHook = ''
-          export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:${builtins.toString (pkgs.lib.makeLibraryPath deps)}";
-        '';
-      };
-  };
+    flake-utils,
+  }:
+    flake-utils.lib.eachDefaultSystem (
+      system: let
+        pkgs = import nixpkgs {inherit system;};
+        deps = with pkgs; [
+          (python3.withPackages (python-pkgs: [python-pkgs.requests]))
+          go
+          rustup
+          cargo
+          rustc
+        ];
+      in {
+        devShells.default = pkgs.mkShell {
+          buildInputs = deps;
+          shellHook = ''
+            export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:${builtins.toString (pkgs.lib.makeLibraryPath deps)}";
+          '';
+        };
+      }
+    );
 }

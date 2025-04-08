@@ -11,7 +11,7 @@ By leveraging Go’s native libFuzzer-compatible instrumentation (`sancov_8bit`)
 ## Performance
 Comparing GoLibAFL with the native libfuzzer shows great performance. Running 24h on the prometheus example:
 
-<img src="images/performance.png" width="800">
+<img src="images/performance.png" width="600">
 
 ## Installation
 ### Requirements
@@ -28,13 +28,19 @@ Comparing GoLibAFL with the native libfuzzer shows great performance. Running 24
 2. Define your golang harness (see below)
 3. Define the harness location with the environement variable `HARNESS`:
     ```sh
-    export "HARNESS=examples/promql"
+    export "HARNESS=harnesses/promql"
     ```
 4. Build and run the Rust-based LibAFL fuzzer:
    ```sh
    cargo run --release -- fuzz
    ```
 
+   or
+
+   ```sh
+   docker build --build-arg HARNESS="harnesses/promql" -t golibafl .
+   docker run -v ./output:/golibafl/output golibafl
+   ```
 ## Usage
 ### Defining a harness in Go
 Implement your harness in the `LLVMFuzzerTestOneInput` function, which will be used by LibAFL:
@@ -67,6 +73,9 @@ cargo run -- run --help
 ### Performance optimization
 - **Use Rust nightly toolchain** for optimized memory mapping.
 - **Upgrade Go to at least version 1.23** to avoid `cgo` stack bound performance issues.
+
+## Todo's
+- [ ] Fix garbage collector limitations
 
 ## License
 This project is licensed under the Apache 2.0 License.
