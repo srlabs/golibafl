@@ -20,6 +20,9 @@ ENV PATH="/root/.cargo/bin:${PATH}"
 # Copy the source code into the container
 COPY . .
 
+ARG HARNESS=harnesses/promql
+ENV HARNESS=$HARNESS
+
 # Compile golibafl and the harness
 RUN cargo build --release
 
