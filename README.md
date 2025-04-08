@@ -25,7 +25,7 @@ Across all our 24-hour benchmarks, GoLibAFL consistently achieved higher code co
    git clone <repo-url>
    cd <repo-name>
    ```
-2. Define your golang harness (see below)
+2. Define your golang harness (see [below](#defining-a-harness-in-go))
 3. Define the harness location with the environement variable `HARNESS`:
     ```sh
     export "HARNESS=harnesses/promql"

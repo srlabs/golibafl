@@ -1,3 +1,3 @@
 ## Harness template
-This directory provides a minimal Go harness for use with our LibAFL fuzzer.
-Simply implement your harness function and invoke it inside `LLVMFuzzerTestOneInput`.
+This directory contains a minimal Go harness designed for use with GoLibAFL.
+To get started, simply implement your custom harness function and invoke it inside `LLVMFuzzerTestOneInput`.
