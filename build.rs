@@ -6,7 +6,8 @@ fn main() {
     // Enable cgo
     env::set_var("CGO_ENABLED", "1");
 
-    let harness_path = env::var("HARNESS").unwrap_or_else(|_| String::from("./harnesses/promql"));
+    let harness_path =
+        env::var("HARNESS").unwrap_or_else(|_| String::from("./harnesses/prometheus"));
 
     // Define the output directory for the Go library
     let out_dir = match env::var("OUT_DIR") {

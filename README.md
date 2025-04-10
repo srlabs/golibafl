@@ -9,7 +9,7 @@ By leveraging Go’s native libFuzzer-compatible instrumentation (`sancov_8bit`)
 - **Interoperability with Go** via Foreign Function Interface (FFI).
 
 ## Performance
-Across all our 24-hour benchmarks, GoLibAFL consistently achieved higher code coverage than existing Go fuzzing solutions. Below is the result for the [prometheus](./harnesses/promql/) target.
+Across all our 24-hour benchmarks, GoLibAFL consistently achieved higher code coverage than existing Go fuzzing solutions. Below is the result for the [prometheus](./harnesses/prometheus/) target.
 
 <img src="images/performance.png" width="600">
 
@@ -28,7 +28,7 @@ Across all our 24-hour benchmarks, GoLibAFL consistently achieved higher code co
 2. Define your golang harness (see [below](#defining-a-harness-in-go))
 3. Define the harness location with the environement variable `HARNESS`:
     ```sh
-    export "HARNESS=harnesses/promql"
+    export "HARNESS=harnesses/prometheus"
     ```
 4. Build and run the Rust-based LibAFL fuzzer:
    ```sh
@@ -38,7 +38,7 @@ Across all our 24-hour benchmarks, GoLibAFL consistently achieved higher code co
    or
 
    ```sh
-   docker build --build-arg HARNESS="harnesses/promql" -t golibafl .
+   docker build --build-arg HARNESS="harnesses/prometheus" -t golibafl .
    docker run -v ./output:/golibafl/output golibafl
    ```
 ## Usage

@@ -4,7 +4,7 @@
 This directory contains all the targets used to test and evaluate our fuzzer.
 The targets include:
 - A custom path constraint target
-- [promql](https://github.com/prometheus/prometheus)
+- [prometheus](https://github.com/prometheus/prometheus)
 - [caddy](https://github.com/caddyserver/caddy)
 - [burntsushi-toml](https://github.com/BurntSushi/toml)
 
