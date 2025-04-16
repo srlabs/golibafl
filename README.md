@@ -38,7 +38,7 @@ Across all our 24-hour benchmarks, GoLibAFL consistently achieved higher code co
    or
 
    ```sh
-   docker build --build-arg HARNESS="harnesses/prometheus" -t golibafl .
+   docker-buildx build --build-arg HARNESS="harnesses/prometheus" -t golibafl .
    docker run -v ./output:/golibafl/output golibafl
    ```
 ## Usage
