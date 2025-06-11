@@ -69,6 +69,29 @@ To see the available command-line options for a subcommand, use:
 cargo run -- fuzz --help
 cargo run -- run --help
 ```
+   
+## Troubleshot 
+### Issues on macOS
+#### Undefined symbols for architecture arm64
+While fuzzing on macOS, you might encounter issues like:
+
+```bash
+  = note: Undefined symbols for architecture arm64:
+            "_CFArrayAppendValue", referenced from:
+                _runtime.text in libharness.a[2](go.o) 
+```
+
+If that is the case, update the `build.rs` and add the missing framework(s) missed within the `#[cfg(target_os = "macos")]` block, for example:
+
+```rust
+println!("cargo:rustc-link-lib=framework=CoreFoundation");
+println!("cargo:rustc-link-lib=framework=Security"); 
+println!("cargo:rustc-link-lib=framework=SystemConfiguration");
+println!("cargo:rustc-link-lib=dylib=resolv");
+```
+
+You can find the missing frameworks by Googling the missing symbol. Here `_CFArrayAppendValue`is missing which is in [`CoreFoundation`](https://developer.apple.com/documentation/corefoundation/cfarrayappendvalue(_:_:)?language=objc), thus the `cargo:rustc-link-lib=framework=CoreFoundation`. 
+
 
 ### Performance optimization
 - **Use Rust nightly toolchain** for optimized memory mapping.
