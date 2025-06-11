@@ -268,7 +268,7 @@ fn fuzz(cores: &Cores, broker_port: u16, input: &PathBuf, output: &Path) {
                     state.corpus().count()
                 );
             } else {
-                println!("Loading from {:?}", input);
+                println!("Loading from {input:?}");
                 // Load from disk
                 state
                     .load_initial_inputs(
@@ -278,7 +278,7 @@ fn fuzz(cores: &Cores, broker_port: u16, input: &PathBuf, output: &Path) {
                         &[input.to_path_buf()],
                     )
                     .unwrap_or_else(|_| {
-                        panic!("Failed to load initial corpus at {:?}", input);
+                        panic!("Failed to load initial corpus at {input:?}");
                     });
                 println!("We imported {} inputs from disk.", state.corpus().count());
             }
