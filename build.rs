@@ -55,4 +55,12 @@ fn main() {
     println!("cargo:rustc-link-search=native={}", out_dir.display());
     // Tell cargo to link the static Go library
     println!("cargo:rustc-link-lib=static=harness");
+    // If fuzzing on macOS, we need to specify those `rustc-link-lib` parameters required by Go runtime
+    #[cfg(target_os = "macos")]
+    {
+        println!("cargo:rustc-link-lib=framework=CoreFoundation");
+        println!("cargo:rustc-link-lib=framework=Security");
+        println!("cargo:rustc-link-lib=framework=SystemConfiguration");
+        println!("cargo:rustc-link-lib=dylib=resolv");
+    }
 }
