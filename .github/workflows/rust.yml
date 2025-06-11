@@ -16,6 +16,9 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+    - name: Install libvirt development libraries
+      run: |
+        rustup component add --toolchain nightly-x86_64-unknown-linux-gnu clippy
     - name: Build
       run: cargo build --verbose
     - name: Run clippy
