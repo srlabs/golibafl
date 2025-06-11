@@ -70,7 +70,7 @@ cargo run -- fuzz --help
 cargo run -- run --help
 ```
    
-## Troubleshot 
+## Troubleshoot 
 ### Issues on macOS
 #### Undefined symbols for architecture arm64
 While fuzzing on macOS, you might encounter issues like:
