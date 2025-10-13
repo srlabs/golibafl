@@ -6,7 +6,7 @@ use libafl::{
     feedbacks::{CrashFeedback, MaxMapFeedback},
     fuzzer::{Fuzzer, StdFuzzer},
     inputs::{BytesInput, HasTargetBytes},
-    mutators::scheduled::StdScheduledMutator,
+    mutators::scheduled::HavocScheduledMutator,
     nonzero,
     prelude::{
         havoc_mutations, powersched::PowerSchedule, tokens_mutations, CalibrationStage, CanTrack,
@@ -136,157 +136,157 @@ fn fuzz(cores: &Cores, broker_port: u16, input: &PathBuf, output: &Path) {
     let shmem_provider = StdShMemProvider::new().expect("Failed to init shared memory");
     let monitor = SimpleMonitor::new(|s| println!("{s}"));
 
-    let mut run_client = |state: Option<_>,
-                          mut restarting_mgr,
-                          client_description: ClientDescription| {
-        // We assume COUNTERS_MAP len == 1  so that we can use StdMapObserver instead of Multimapobserver to improve performance.
-        let counters_map_len = unsafe { COUNTERS_MAPS.len() };
-        assert!(
-            (counters_map_len == 1),
-            "{}",
-            format!("Unexpected COUNTERS_MAPS length: {counters_map_len}")
-        );
-        let edges = unsafe { extra_counters() };
-        let edges_observer =
-            StdMapObserver::from_mut_slice("edges", edges.into_iter().next().unwrap())
-                .track_indices();
+    let mut run_client =
+        |state: Option<_>, mut restarting_mgr, client_description: ClientDescription| {
+            // We assume COUNTERS_MAP len == 1  so that we can use StdMapObserver instead of Multimapobserver to improve performance.
+            let counters_map_len = unsafe { COUNTERS_MAPS.len() };
+            assert!(
+                (counters_map_len == 1),
+                "{}",
+                format!("Unexpected COUNTERS_MAPS length: {counters_map_len}")
+            );
+            let edges = unsafe { extra_counters() };
+            let edges_observer =
+                StdMapObserver::from_mut_slice("edges", edges.into_iter().next().unwrap())
+                    .track_indices();
 
-        // Observers
-        let time_observer = TimeObserver::new("time");
-        let cmplog_observer = CmpLogObserver::new("cmplog", true);
-        let map_feedback = MaxMapFeedback::new(&edges_observer);
-        let calibration = CalibrationStage::new(&map_feedback);
+            // Observers
+            let time_observer = TimeObserver::new("time");
+            let cmplog_observer = CmpLogObserver::new("cmplog", true);
+            let map_feedback = MaxMapFeedback::new(&edges_observer);
+            let calibration = CalibrationStage::new(&map_feedback);
 
-        let mut feedback = feedback_or_fast!(
-            // New maximization map feedback linked to the edges observer and the feedback state
-            map_feedback,
-            // Time feedback, this one does not need a feedback state
-            TimeFeedback::new(&time_observer)
-        );
+            let mut feedback = feedback_or_fast!(
+                // New maximization map feedback linked to the edges observer and the feedback state
+                map_feedback,
+                // Time feedback, this one does not need a feedback state
+                TimeFeedback::new(&time_observer)
+            );
 
-        // A feedback to choose if an input is a solution or not
-        let mut objective = feedback_or_fast!(CrashFeedback::new());
+            // A feedback to choose if an input is a solution or not
+            let mut objective = feedback_or_fast!(CrashFeedback::new());
 
-        // create a State from scratch
-        let mut state = state.unwrap_or_else(|| {
-            StdState::new(
-                StdRand::new(),
-                // Corpus that will be evolved
-                CachedOnDiskCorpus::new(
-                    format!("{}/queue/{}", output.display(), client_description.id()),
-                    4096,
+            // create a State from scratch
+            let mut state = state.unwrap_or_else(|| {
+                StdState::new(
+                    StdRand::new(),
+                    // Corpus that will be evolved
+                    CachedOnDiskCorpus::new(
+                        format!("{}/queue/{}", output.display(), client_description.id()),
+                        4096,
+                    )
+                    .unwrap(),
+                    // Corpus in which we store solutions
+                    OnDiskCorpus::new(format!("{}/crashes", output.display())).unwrap(),
+                    &mut feedback,
+                    &mut objective,
                 )
-                .unwrap(),
-                // Corpus in which we store solutions
-                OnDiskCorpus::new(format!("{}/crashes", output.display())).unwrap(),
-                &mut feedback,
-                &mut objective,
-            )
-            .unwrap()
-        });
+                .unwrap()
+            });
 
-        // Setup a randomic Input2State stage
-        let i2s =
-            StdMutationalStage::new(StdScheduledMutator::new(tuple_list!(I2SRandReplace::new())));
+            // Setup a randomic Input2State stage
+            let i2s = StdMutationalStage::new(HavocScheduledMutator::new(tuple_list!(
+                I2SRandReplace::new()
+            )));
 
-        // Setup a MOPT mutator
-        let mutator = StdMOptMutator::new(
-            &mut state,
-            havoc_mutations().merge(tokens_mutations()),
-            7,
-            5,
-        )?;
-
-        let power: StdPowerMutationalStage<_, _, BytesInput, _, _, _> =
-            StdPowerMutationalStage::new(mutator);
-
-        let scheduler = IndexesLenTimeMinimizerScheduler::new(
-            &edges_observer,
-            StdWeightedScheduler::with_schedule(
+            // Setup a MOPT mutator
+            let mutator = StdMOptMutator::new(
                 &mut state,
+                havoc_mutations().merge(tokens_mutations()),
+                7,
+                5,
+            )?;
+
+            let power: StdPowerMutationalStage<_, _, BytesInput, _, _, _> =
+                StdPowerMutationalStage::new(mutator);
+
+            let scheduler = IndexesLenTimeMinimizerScheduler::new(
                 &edges_observer,
-                Some(PowerSchedule::fast()),
-            ),
-        );
+                StdWeightedScheduler::with_schedule(
+                    &mut state,
+                    &edges_observer,
+                    Some(PowerSchedule::fast()),
+                ),
+            );
 
-        // A fuzzer with feedbacks and a corpus scheduler
-        let mut fuzzer = StdFuzzer::new(scheduler, feedback, objective);
+            // A fuzzer with feedbacks and a corpus scheduler
+            let mut fuzzer = StdFuzzer::new(scheduler, feedback, objective);
 
-        // The closure that we want to fuzz
-        let mut harness = |input: &BytesInput| {
-            let target = input.target_bytes();
-            unsafe {
-                libfuzzer_test_one_input(&target);
+            // The closure that we want to fuzz
+            let mut harness = |input: &BytesInput| {
+                let target = input.target_bytes();
+                unsafe {
+                    libfuzzer_test_one_input(&target);
+                }
+                ExitKind::Ok
+            };
+
+            let executor = InProcessExecutor::with_timeout(
+                &mut harness,
+                tuple_list!(edges_observer, time_observer),
+                &mut fuzzer,
+                &mut state,
+                &mut restarting_mgr,
+                Duration::new(1, 0),
+            )?;
+
+            let mut executor = ShadowExecutor::new(executor, tuple_list!(cmplog_observer));
+
+            // Setup a tracing stage in which we log comparisons
+            let tracing = ShadowTracingStage::new();
+
+            let mut stages = tuple_list!(calibration, tracing, i2s, power);
+
+            if state.metadata_map().get::<Tokens>().is_none() {
+                let mut toks = Tokens::default();
+                toks += autotokens()?;
+
+                if !toks.is_empty() {
+                    state.add_metadata(toks);
+                }
             }
-            ExitKind::Ok
+
+            // Load corpus from input folder
+            // In case the corpus is empty (on first run), reset
+            if state.must_load_initial_inputs() {
+                if read_dir(input).iter().len() == 0 {
+                    // Generator of printable bytearrays of max size 32
+                    let mut generator = RandBytesGenerator::new(nonzero!(32));
+
+                    // Generate 8 initial inputs
+                    state
+                        .generate_initial_inputs(
+                            &mut fuzzer,
+                            &mut executor,
+                            &mut generator,
+                            &mut restarting_mgr,
+                            8,
+                        )
+                        .expect("Failed to generate the initial corpus");
+                    println!(
+                        "We imported {} inputs from the generator.",
+                        state.corpus().count()
+                    );
+                } else {
+                    println!("Loading from {input:?}");
+                    // Load from disk
+                    state
+                        .load_initial_inputs(
+                            &mut fuzzer,
+                            &mut executor,
+                            &mut restarting_mgr,
+                            &[input.to_path_buf()],
+                        )
+                        .unwrap_or_else(|_| {
+                            panic!("Failed to load initial corpus at {input:?}");
+                        });
+                    println!("We imported {} inputs from disk.", state.corpus().count());
+                }
+            }
+
+            fuzzer.fuzz_loop(&mut stages, &mut executor, &mut state, &mut restarting_mgr)?;
+            Ok(())
         };
-
-        let executor = InProcessExecutor::with_timeout(
-            &mut harness,
-            tuple_list!(edges_observer, time_observer),
-            &mut fuzzer,
-            &mut state,
-            &mut restarting_mgr,
-            Duration::new(1, 0),
-        )?;
-
-        let mut executor = ShadowExecutor::new(executor, tuple_list!(cmplog_observer));
-
-        // Setup a tracing stage in which we log comparisons
-        let tracing = ShadowTracingStage::new();
-
-        let mut stages = tuple_list!(calibration, tracing, i2s, power);
-
-        if state.metadata_map().get::<Tokens>().is_none() {
-            let mut toks = Tokens::default();
-            toks += autotokens()?;
-
-            if !toks.is_empty() {
-                state.add_metadata(toks);
-            }
-        }
-
-        // Load corpus from input folder
-        // In case the corpus is empty (on first run), reset
-        if state.must_load_initial_inputs() {
-            if read_dir(input).iter().len() == 0 {
-                // Generator of printable bytearrays of max size 32
-                let mut generator = RandBytesGenerator::new(nonzero!(32));
-
-                // Generate 8 initial inputs
-                state
-                    .generate_initial_inputs(
-                        &mut fuzzer,
-                        &mut executor,
-                        &mut generator,
-                        &mut restarting_mgr,
-                        8,
-                    )
-                    .expect("Failed to generate the initial corpus");
-                println!(
-                    "We imported {} inputs from the generator.",
-                    state.corpus().count()
-                );
-            } else {
-                println!("Loading from {input:?}");
-                // Load from disk
-                state
-                    .load_initial_inputs(
-                        &mut fuzzer,
-                        &mut executor,
-                        &mut restarting_mgr,
-                        &[input.to_path_buf()],
-                    )
-                    .unwrap_or_else(|_| {
-                        panic!("Failed to load initial corpus at {input:?}");
-                    });
-                println!("We imported {} inputs from disk.", state.corpus().count());
-            }
-        }
-
-        fuzzer.fuzz_loop(&mut stages, &mut executor, &mut state, &mut restarting_mgr)?;
-        Ok(())
-    };
     match Launcher::builder()
         .shmem_provider(shmem_provider)
         .configuration(EventConfig::from_name("default"))

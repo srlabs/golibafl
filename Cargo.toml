@@ -9,8 +9,8 @@ codegen-units = 1
 lto = "fat"
 
 [dependencies]
-libafl = { version = "0.15.2", features = ["prelude",  "std", "derive"]}
-libafl_bolts = { version = "0.15.2" } 
-libafl_targets = { version = "0.15.2", features = ["sancov_8bit", "observers", "libfuzzer", "sancov_cmplog", "sancov_pcguard_hitcounts"] }
+libafl = { version = "0.15.3", features = ["prelude",  "std", "derive"]}
+libafl_bolts = { version = "0.15.3" } 
+libafl_targets = { version = "0.15.3", features = ["sancov_8bit", "observers", "libfuzzer", "sancov_cmplog", "sancov_pcguard_hitcounts"] }
 clap = {version = "4.5.23", features = ["derive"]}
 mimalloc = "0.1.43"
