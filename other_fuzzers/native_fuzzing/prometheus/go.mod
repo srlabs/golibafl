@@ -1,6 +1,6 @@
 module srlabs.de/harness
 
-go 1.23.2
+go 1.24.1
 
 require (
 	github.com/beorn7/perks v1.0.1 // indirect

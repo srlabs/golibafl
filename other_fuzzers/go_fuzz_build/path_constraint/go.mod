@@ -1,6 +1,6 @@
 module srlabs.de/harness
 
-go 1.23.2
+go 1.24.1
 
 require github.com/AdamKorcz/go-118-fuzz-build v0.0.0-20231105174938-2b5cbb29f3e2
 

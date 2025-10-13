@@ -1,6 +1,6 @@
 module srlabs.de/harness
 
-go 1.23.2
+go 1.24.1
 
 require github.com/prometheus/prometheus v0.301.0
 
