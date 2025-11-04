@@ -18,14 +18,6 @@ func LLVMFuzzerTestOneInput(data *C.char, size C.size_t) C.int {
 	s := C.GoBytes(unsafe.Pointer(data), C.int(size))
 	defer catchPanics()
 	harness(s)
-
-	return 0
-}
-
-//export LLVMFuzzerInitialize
-func LLVMFuzzerInitialize(argc *C.int, argv ***C.char) C.int {
-	debug.SetGCPercent(-1)
-	debug.SetMemoryLimit(1024 * 1024 * 1024) // set a max of 1G RAM usage per process
 	return 0
 }
 
@@ -33,6 +25,13 @@ func catchPanics() {
 	if recover() != nil {
 		syscall.Kill(os.Getpid(), syscall.SIGABRT)
 	}
+}
+
+//export LLVMFuzzerInitialize
+func LLVMFuzzerInitialize(argc *C.int, argv ***C.char) C.int {
+	debug.SetGCPercent(-1)
+	debug.SetMemoryLimit(1024 * 1024 * 1024) // set a max of 1G RAM usage per process
+	return 0
 }
 
 func main() {
@@ -66,4 +65,3 @@ func main() {
 		fmt.Println("Usage: <folderPath>")
 	}
 }
-

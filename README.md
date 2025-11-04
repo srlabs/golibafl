@@ -30,7 +30,11 @@ Across all our 24-hour benchmarks, GoLibAFL consistently achieved higher code co
     ```sh
     export "HARNESS=harnesses/prometheus"
     ```
-4. Build and run the Rust-based LibAFL fuzzer:
+4. Optionally, define the location of the go binary with the `GO_PATH` environment variable:
+   ```sh
+   export "GO_PATH=path/to/go/binary"
+   ```
+5. Build and run the Rust-based LibAFL fuzzer:
    ```sh
    cargo run --release -- fuzz
    ```
@@ -41,20 +45,23 @@ Across all our 24-hour benchmarks, GoLibAFL consistently achieved higher code co
    docker build --build-arg HARNESS="harnesses/prometheus" -t golibafl .
    docker run -v ./output:/golibafl/output golibafl
    ```
+
+For an elaborate description of how to fuzz one of the example targets, refer to the [README](./harnesses/README.md)
 ## Usage
 ### Defining a harness in Go
-Implement your harness in the `LLVMFuzzerTestOneInput` function, which will be used by LibAFL:
+To define a harness, create a function named `harness` within the `main` package that accepts a byte slice as input:
 ```go
-func LLVMFuzzerTestOneInput(data *C.char, size C.size_t) C.int {
-   // `data` should be converted to the type you need and passed as input
-   input := C.GoBytes(unsafe.Pointer(data), C.int(size))
+package main
 
-   // function to be fuzzed, i.e `parse`
-   mylib.parse(input)
+func harness(data []byte) {
 }
 ```
 
-For an example setup, refer to our [harness template](./harness_template/).
+Next, initialize a Go module and download its dependencies:
+```sh
+go mod init fuzz
+go mod tidy
+```
 
 ### Running a specific input
 To execute the harness with a specific input, run:
@@ -69,8 +76,8 @@ To see the available command-line options for a subcommand, use:
 cargo run -- fuzz --help
 cargo run -- run --help
 ```
-   
-## Troubleshoot 
+
+## Troubleshoot
 ### Issues on macOS
 #### Undefined symbols for architecture arm64
 While fuzzing on macOS, you might encounter issues like:
@@ -78,19 +85,19 @@ While fuzzing on macOS, you might encounter issues like:
 ```bash
   = note: Undefined symbols for architecture arm64:
             "_CFArrayAppendValue", referenced from:
-                _runtime.text in libharness.a[2](go.o) 
+                _runtime.text in libharness.a[2](go.o)
 ```
 
 If that is the case, update the `build.rs` and add the missing framework(s) missed within the `#[cfg(target_os = "macos")]` block, for example:
 
 ```rust
 println!("cargo:rustc-link-lib=framework=CoreFoundation");
-println!("cargo:rustc-link-lib=framework=Security"); 
+println!("cargo:rustc-link-lib=framework=Security");
 println!("cargo:rustc-link-lib=framework=SystemConfiguration");
 println!("cargo:rustc-link-lib=dylib=resolv");
 ```
 
-You can find the missing frameworks by Googling the missing symbol. Here `_CFArrayAppendValue`is missing which is in [`CoreFoundation`](https://developer.apple.com/documentation/corefoundation/cfarrayappendvalue(_:_:)?language=objc), thus the `cargo:rustc-link-lib=framework=CoreFoundation`. 
+You can find the missing frameworks by Googling the missing symbol. Here `_CFArrayAppendValue`is missing which is in [`CoreFoundation`](https://developer.apple.com/documentation/corefoundation/cfarrayappendvalue(_:_:)?language=objc), thus the `cargo:rustc-link-lib=framework=CoreFoundation`.
 
 
 ### Performance optimization

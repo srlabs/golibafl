@@ -6,31 +6,13 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+
 	"testing"
 )
 
-func LLVMFuzzerTestOneInput(data []byte) {
-	cmpLogTarget := []byte("FUZZING!")
-
-	if len(data) < 4+len(cmpLogTarget) {
-		return
-	}
-
-	if data[0] == 'F' {
-		if data[1] == 'U' {
-			if data[2] == 'Z' {
-				if data[3] == 'Z' {
-					if string(data[4:4+len(cmpLogTarget)]) == string(cmpLogTarget) {
-						panic("FUZZFUZZING!")
-					}
-				}
-			}
-		}
-	}
-}
-
 func FuzzMe(f *testing.F) {
-	path := "./output/queue/"
+	//path := "./output/queue/"
+	path := "REPLACE_ME"
 	addCorpusFilesAsSeeds(f, path)
 	f.Fuzz(func(t *testing.T, input []byte) {
 		harness(input)
