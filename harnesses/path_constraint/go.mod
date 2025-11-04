@@ -1,3 +1,3 @@
-module srlabs.de/harness
+module fuzz
 
 go 1.24.1

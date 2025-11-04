@@ -29,10 +29,12 @@ use libafl_targets::{
     CmpLogObserver, COUNTERS_MAPS,
 };
 use mimalloc::MiMalloc;
+use std::process::Command;
 use std::{
-    env,
+    env, fs,
     fs::read_dir,
     path::{Path, PathBuf},
+    process::Stdio,
     time::Duration,
 };
 
@@ -83,6 +85,17 @@ enum Mode {
             help = "Fuzzer's output directory"
         )]
         output: PathBuf,
+    },
+    Cov {
+        #[clap(short, long, value_name = "OUTPUT", help = "Fuzzer's output directory")]
+        output: PathBuf,
+        #[clap(
+            short,
+            long,
+            value_name = "HARNESS",
+            help = "Fuzzer's harness directory"
+        )]
+        fuzzer_harness: PathBuf,
     },
 }
 // Clap top level struct for args
@@ -304,7 +317,68 @@ fn fuzz(cores: &Cores, broker_port: u16, input: &PathBuf, output: &Path) {
     }
 }
 
-// Entry point wrapping clap and calling fuzz or run
+fn cov(output_dir: &Path, harness_dir: &Path) {
+    let mut test_code = String::from(include_str!("../harness_wrappers/harness_test.go"));
+
+    let output_dir = if output_dir.is_relative() {
+        &format!(
+            "{}/{}",
+            env!("CARGO_MANIFEST_DIR"),
+            output_dir.as_os_str().to_str().unwrap()
+        )
+    } else {
+        output_dir.as_os_str().to_str().unwrap()
+    };
+
+    let harness_dir = harness_dir
+        .as_os_str()
+        .to_str()
+        .expect("Harness dir not valid unicode");
+
+    test_code = test_code.replace("REPLACE_ME", &format!("{}/queue", output_dir));
+
+    fs::write(format!("{}/harness_test.go", harness_dir), test_code)
+        .expect("Failed to write coverage go file");
+
+    let output = Command::new("go")
+        .args(["list", "-deps", "-test"])
+        .current_dir(harness_dir)
+        .stdout(Stdio::null())
+        .output()
+        .expect("Failed to execute go");
+
+    let deps = String::from_utf8_lossy(&output.stdout).replace('\n', ",");
+
+    let status = Command::new("go")
+        .args([
+            "test",
+            "-tags=gocov",
+            "-run=FuzzMe",
+            "-cover",
+            &format!("-coverpkg={}", deps),
+            "-coverprofile",
+            "cover.out",
+        ])
+        .current_dir(harness_dir)
+        .stdout(Stdio::null())
+        .status();
+
+    fs::remove_file(format!("{}/harness_test.go", harness_dir))
+        .expect("Failed to remove coverage file");
+
+    // make sure we unpack status after we removed file
+    status.expect("Failed to execute go");
+
+    Command::new("go")
+        .args(["tool", "cover", "-html", "cover.out", "-o", "cover.html"])
+        .current_dir(harness_dir)
+        .status()
+        .expect("Failed to execute go");
+
+    println!("Coverage files succesfully created in {}", harness_dir)
+}
+
+// Entry point wrapping clap and calling fuzz, run or cov
 pub fn main() {
     let cli = Cli::parse();
 
@@ -318,5 +392,9 @@ pub fn main() {
         Mode::Run { input } => {
             run(input);
         }
+        Mode::Cov {
+            output,
+            fuzzer_harness,
+        } => cov(&output, &fuzzer_harness),
     }
 }
