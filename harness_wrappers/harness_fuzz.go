@@ -5,9 +5,9 @@ package main
 import (
 	"fmt"
 	"os"
+	"runtime/debug"
 	"syscall"
 	"unsafe"
-	"runtime/debug"
 )
 
 // #include <stdint.h>

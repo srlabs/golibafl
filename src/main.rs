@@ -96,6 +96,13 @@ enum Mode {
             help = "Fuzzer's harness directory"
         )]
         fuzzer_harness: PathBuf,
+        #[clap(
+            short,
+            long,
+            value_name = "COV_PACKAGE",
+            help = "Package name the coverage should be filtered for"
+        )]
+        coverage_filter: Option<String>,
     },
 }
 // Clap top level struct for args
@@ -317,7 +324,7 @@ fn fuzz(cores: &Cores, broker_port: u16, input: &PathBuf, output: &Path) {
     }
 }
 
-fn cov(output_dir: &Path, harness_dir: &Path) {
+fn cov(output_dir: &Path, harness_dir: &Path, coverage_filter: Option<String>) {
     let mut test_code = String::from(include_str!("../harness_wrappers/harness_test.go"));
 
     let output_dir = if output_dir.is_relative() {
@@ -343,11 +350,29 @@ fn cov(output_dir: &Path, harness_dir: &Path) {
     let output = Command::new("go")
         .args(["list", "-deps", "-test"])
         .current_dir(harness_dir)
-        .stdout(Stdio::null())
         .output()
         .expect("Failed to execute go");
 
-    let deps = String::from_utf8_lossy(&output.stdout).replace('\n', ",");
+    let filter_terms: Vec<&str> = if let Some(coverage_filter) = coverage_filter.as_ref() {
+        coverage_filter
+            .split(",")
+            .map(str::trim)
+            .filter(|s| !s.is_empty())
+            .collect()
+    } else {
+        Vec::new()
+    };
+
+    let deps_raw = String::from_utf8_lossy(&output.stdout);
+    let mut packages: Vec<&str> = deps_raw
+        .lines()
+        .map(str::trim)
+        .filter(|l| !l.is_empty())
+        .collect();
+
+    if !filter_terms.is_empty() {
+        packages.retain(|p| filter_terms.iter().any(|t| p.contains(t)));
+    }
 
     let status = Command::new("go")
         .args([
@@ -355,7 +380,7 @@ fn cov(output_dir: &Path, harness_dir: &Path) {
             "-tags=gocov",
             "-run=FuzzMe",
             "-cover",
-            &format!("-coverpkg={}", deps),
+            &format!("-coverpkg={}", packages.join(",")),
             "-coverprofile",
             "cover.out",
         ])
@@ -395,6 +420,7 @@ pub fn main() {
         Mode::Cov {
             output,
             fuzzer_harness,
-        } => cov(&output, &fuzzer_harness),
+            coverage_filter,
+        } => cov(&output, &fuzzer_harness, coverage_filter),
     }
 }
