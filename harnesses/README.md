@@ -30,3 +30,11 @@ cargo run -r -- cov -o ./output -f ./harnesses/caddy
 # get coverage if fuzzer output is in golibafl/harnesses/caddy
 cargo run -r -- cov -o ./harnesses/caddy -f ./harnesses/caddy
 ```
+
+You can filter for `caddy` and harness specific coverage by providing the package names as coverage filter (`-c`):
+
+```bash
+cargo run -r -- cov -o ./output -f ./harnesses/caddy -c fuzz,caddy
+
+cargo run -r -- cov -o ./harnesses/caddy -f ./harnesses/caddy -c fuzz,caddy
+```
