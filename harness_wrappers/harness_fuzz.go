@@ -22,7 +22,10 @@ func LLVMFuzzerTestOneInput(data *C.char, size C.size_t) C.int {
 }
 
 func catchPanics() {
-	if recover() != nil {
+	if r := recover(); r != nil {
+		// print panic information
+		fmt.Printf("Go panic: %v\n", r)
+		debug.PrintStack()
 		syscall.Kill(os.Getpid(), syscall.SIGABRT)
 	}
 }

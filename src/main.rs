@@ -29,7 +29,6 @@ use libafl_targets::{
     CmpLogObserver, COUNTERS_MAPS,
 };
 use mimalloc::MiMalloc;
-use std::process::Command;
 use std::{
     env, fs,
     fs::read_dir,
@@ -37,6 +36,7 @@ use std::{
     process::Stdio,
     time::Duration,
 };
+use std::{panic, process::Command};
 
 #[global_allocator]
 static GLOBAL: MiMalloc = MiMalloc;
@@ -137,7 +137,6 @@ fn run(input: PathBuf) {
         let inp =
             std::fs::read(f).unwrap_or_else(|_| panic!("Unable to read file {}", &f.display()));
         if inp.len() > 1 {
-            println!("INPUT: {inp:?}");
             unsafe {
                 libfuzzer_test_one_input(&inp);
             }
