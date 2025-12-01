@@ -25,16 +25,16 @@ HARNESS=harnesses/caddy cargo run -r -- fuzz -o ./harnesses/caddy
 **Get coverage**
 ```bash
 # get coverage if fuzzer output is in golibafl/output
-cargo run -r -- cov -o ./output -f ./harnesses/caddy
+cargo run -r -- cov -o ./output/queue -f ./harnesses/caddy
 
 # get coverage if fuzzer output is in golibafl/harnesses/caddy
-cargo run -r -- cov -o ./harnesses/caddy -f ./harnesses/caddy
+cargo run -r -- cov -o ./harnesses/caddy/queue -f ./harnesses/caddy
 ```
 
 You can filter for `caddy` and harness specific coverage by providing the package names as coverage filter (`-c`):
 
 ```bash
-cargo run -r -- cov -o ./output -f ./harnesses/caddy -c fuzz,caddy
+cargo run -r -- cov -o ./output/queue -f ./harnesses/caddy -c fuzz,caddy
 
-cargo run -r -- cov -o ./harnesses/caddy -f ./harnesses/caddy -c fuzz,caddy
+cargo run -r -- cov -o ./harnesses/caddy/queue -f ./harnesses/caddy -c fuzz,caddy
 ```

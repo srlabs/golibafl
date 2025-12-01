@@ -341,7 +341,7 @@ fn cov(output_dir: &Path, harness_dir: &Path, coverage_filter: Option<String>) {
         .to_str()
         .expect("Harness dir not valid unicode");
 
-    test_code = test_code.replace("REPLACE_ME", &format!("{}/queue", output_dir));
+    test_code = test_code.replace("REPLACE_ME", output_dir);
 
     fs::write(format!("{}/harness_test.go", harness_dir), test_code)
         .expect("Failed to write coverage go file");
