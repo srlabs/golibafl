@@ -32,8 +32,6 @@ func catchPanics() {
 
 //export LLVMFuzzerInitialize
 func LLVMFuzzerInitialize(argc *C.int, argv ***C.char) C.int {
-	debug.SetGCPercent(-1)
-	debug.SetMemoryLimit(1024 * 1024 * 1024) // set a max of 1G RAM usage per process
 	return 0
 }
 
