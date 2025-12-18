@@ -149,14 +149,15 @@ fn run(input: PathBuf) {
 #[allow(static_mut_refs)]
 fn fuzz(cores: &Cores, broker_port: u16, input: &PathBuf, output: &Path) {
     let args: Vec<String> = env::args().collect();
-    if unsafe { libfuzzer_initialize(&args) } == -1 {
-        println!("Warning: LLVMFuzzerInitialize failed with -1");
-    }
     let shmem_provider = StdShMemProvider::new().expect("Failed to init shared memory");
     let monitor = SimpleMonitor::new(|s| println!("{s}"));
 
     let mut run_client =
         |state: Option<_>, mut restarting_mgr, client_description: ClientDescription| {
+            // trigger Go runtime initialization, which calls __sanitizer_cov_8bit_counters_init to initialize COUNTERS_MAPS
+            if unsafe { libfuzzer_initialize(&args) } == -1 {
+                println!("Warning: LLVMFuzzerInitialize failed with -1");
+            }
             // We assume COUNTERS_MAP len == 1  so that we can use StdMapObserver instead of Multimapobserver to improve performance.
             let counters_map_len = unsafe { COUNTERS_MAPS.len() };
             assert!(
@@ -313,7 +314,7 @@ fn fuzz(cores: &Cores, broker_port: u16, input: &PathBuf, output: &Path) {
         .run_client(&mut run_client)
         .cores(cores)
         .broker_port(broker_port)
-        .stdout_file(Some("/dev/null")) // Comment this out for debugging
+        .fork(false)
         .build()
         .launch()
     {
