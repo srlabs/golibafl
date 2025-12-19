@@ -104,8 +104,5 @@ You can find the missing frameworks by Googling the missing symbol. Here `_CFArr
 - **Use Rust nightly toolchain** for optimized memory mapping.
 - **Upgrade Go to at least version 1.23** to avoid `cgo` stack bound performance issues.
 
-## Todo's
-- [ ] Fix garbage collector limitations
-
 ## License
 This project is licensed under the Apache 2.0 License.
