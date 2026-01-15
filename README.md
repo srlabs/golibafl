@@ -10,8 +10,9 @@ By leveraging Go’s native libFuzzer-compatible instrumentation (`sancov_8bit`)
 
 ## Performance
 Across all our 24-hour benchmarks, GoLibAFL consistently achieved higher code coverage than existing Go fuzzing solutions. Below is the result for the [prometheus](./harnesses/prometheus/) target.
+For the results of the other two targets refer to the [images](./images) directory.
 
-<img src="images/performance.png" width="600">
+<img src="images/prometheus.png" width="600">
 
 ## Installation
 ### Requirements
